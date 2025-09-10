@@ -3,71 +3,70 @@
 #include <ctime>
 using namespace std;
 
-// ---------- Macro ----------
+
 #define SUCCESS 1
 #define FAILURE 0
 
-// ---------- Class Declarations ----------
-class Transaction;  // Forward declaration
 
-// ---------- VendingMachine Class ----------
+class Transaction;  
+
+
 class VendingMachine {
 private:
-    static int transactionCount; // static member
+    static int transactionCount; 
     int productId;
     string productName;
     double price;
 
 public:
-    // Default Constructor
+    
     VendingMachine() : productId(0), productName("Unknown"), price(0.0) {}
 
-    // Parameterized Constructor
+    
     VendingMachine(int id, string name, double p) {
         productId = id;
         productName = name;
         price = p;
     }
 
-    // Copy Constructor
     VendingMachine(const VendingMachine &vm) {
         productId = vm.productId;
         productName = vm.productName;
         price = vm.price;
     }
 
-    // Destructor
+ 
     ~VendingMachine() {
         cout << "Destructor called for product: " << productName << endl;
     }
 
-    // Static Function
+   
     static void showTransactionCount() {
         cout << "Total Transactions so far: " << transactionCount << endl;
     }
 
-    // Getter
+
     double getPrice() const {
         return price;
     }
 
-    // Inline function
+   
     inline string getProductName() { return productName; }
 
-    // Function Overloading (Payment Methods)
-    int makePayment(double moneyInserted);                   // Cash
-    int makePayment(string cardNo, string holder, int cvv);  // Card
-    int makePayment(string upiId);                           // UPI
-    int makePayment(string bankName, string user, string pass); // NetBanking
+    
+    int makePayment(double moneyInserted);                   
+    int makePayment(string cardNo, string holder, int cvv);  
+    int makePayment(string upiId);                           
+    int makePayment(string bankName, string user, string pass); 
 
-    // Friend declaration
+    
     friend class Transaction;
 };
 
-// Initialize static member
+
 int VendingMachine::transactionCount = 0;
 
-// ---------- Transaction Class ----------
+
 class Transaction {
 public:
     void logTransaction(VendingMachine &vm, string method, double amount, bool status) {
@@ -82,9 +81,9 @@ public:
     }
 };
 
-// ---------- Definitions of Overloaded Functions ----------
 
-// Cash Payment
+
+
 int VendingMachine::makePayment(double moneyInserted) {
     cout << "Cash Payment Selected.\n";
     if (moneyInserted < price) return FAILURE;
@@ -92,27 +91,27 @@ int VendingMachine::makePayment(double moneyInserted) {
     return SUCCESS;
 }
 
-// Card Payment
+
 int VendingMachine::makePayment(string cardNo, string holder, int cvv) {
     cout << "Processing Card Payment for " << holder << endl;
-    if (cardNo.length() != 16 || cvv < 100) return FAILURE; // simple validation
+    if (cardNo.length() != 16 || cvv < 100) return FAILURE; 
     return SUCCESS;
 }
 
-// UPI Payment
+
 int VendingMachine::makePayment(string upiId) {
     cout << "Processing UPI Payment for " << upiId << endl;
-    return SUCCESS; // Assume confirmation
+    return SUCCESS; 
 }
 
-// NetBanking Payment
+
 int VendingMachine::makePayment(string bankName, string user, string pass) {
     cout << "NetBanking via " << bankName << " for user " << user << endl;
-    if (pass.length() < 4) return FAILURE; // Dummy check
+    if (pass.length() < 4) return FAILURE; 
     return SUCCESS;
 }
 
-// ---------- Main Function ----------
+
 int main() {
     VendingMachine vm(101, "Coke", 50.0);
     Transaction tx;
@@ -171,3 +170,4 @@ int main() {
     VendingMachine::showTransactionCount();
     return 0;
 }
+
