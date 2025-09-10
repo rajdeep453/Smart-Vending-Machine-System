@@ -1,87 +1,173 @@
 #include <iostream>
-#include <vector>
 #include <string>
+#include <ctime>
 using namespace std;
 
+// ---------- Macro ----------
+#define SUCCESS 1
+#define FAILURE 0
 
+// ---------- Class Declarations ----------
+class Transaction;  // Forward declaration
 
-// -------------------- Abstract Payment Class --------------------
-class Payment {
-public:
-    virtual bool processPayment(double amount) = 0; // Pure virtual -> Abstraction
-};
-
-// -------------------- Cash Payment --------------------
-class CashPayment : public Payment {
-    double cashInserted;
-public:
-    CashPayment(double c) : cashInserted(c) {}
-    bool processPayment(double amount) override {
-        if(cashInserted >= amount) {
-            cout << "Payment successful with cash. Change: " << (cashInserted - amount) << endl;
-            return true;
-        }
-        cout << "Insufficient cash inserted!" << endl;
-        return false;
-    }
-};
-
-// -------------------- Vending Machine --------------------
+// ---------- VendingMachine Class ----------
 class VendingMachine {
-    vector<Item> inventory;
+private:
+    static int transactionCount; // static member
+    int productId;
+    string productName;
+    double price;
+
 public:
-    void addItem(Item item) { inventory.push_back(item); }
-    void showItems() {
-        cout << "\n--- Available Items ---\n";
-        for(auto &i : inventory) {
-            cout << i.getCode() << ". " << i.getName() 
-                 << " - Rs." << i.getPrice() 
-                 << " (" << i.getQuantity() << " left)\n";
-        }
+    // Default Constructor
+    VendingMachine() : productId(0), productName("Unknown"), price(0.0) {}
+
+    // Parameterized Constructor
+    VendingMachine(int id, string name, double p) {
+        productId = id;
+        productName = name;
+        price = p;
     }
-    Item* selectItem(int code) {
-        for(auto &i : inventory) {
-            if(i.getCode() == code && i.isAvailable()) {
-                return &i;
-            }
-        }
-        return nullptr;
+
+    // Copy Constructor
+    VendingMachine(const VendingMachine &vm) {
+        productId = vm.productId;
+        productName = vm.productName;
+        price = vm.price;
     }
-    void dispenseItem(Item* item) {
-        if(item) {
-            item->reduceQuantity();
-            cout << "Dispensing: " << item->getName() << endl;
-        }
+
+    // Destructor
+    ~VendingMachine() {
+        cout << "Destructor called for product: " << productName << endl;
+    }
+
+    // Static Function
+    static void showTransactionCount() {
+        cout << "Total Transactions so far: " << transactionCount << endl;
+    }
+
+    // Getter
+    double getPrice() const {
+        return price;
+    }
+
+    // Inline function
+    inline string getProductName() { return productName; }
+
+    // Function Overloading (Payment Methods)
+    int makePayment(double moneyInserted);                   // Cash
+    int makePayment(string cardNo, string holder, int cvv);  // Card
+    int makePayment(string upiId);                           // UPI
+    int makePayment(string bankName, string user, string pass); // NetBanking
+
+    // Friend declaration
+    friend class Transaction;
+};
+
+// Initialize static member
+int VendingMachine::transactionCount = 0;
+
+// ---------- Transaction Class ----------
+class Transaction {
+public:
+    void logTransaction(VendingMachine &vm, string method, double amount, bool status) {
+        VendingMachine::transactionCount++;
+        time_t now = time(0);
+        cout << "\n--- Transaction Log ---\n";
+        cout << "Product: " << vm.productName << endl;
+        cout << "Method: " << method << endl;
+        cout << "Amount: " << amount << endl;
+        cout << "Status: " << (status ? "Success" : "Failed") << endl;
+        cout << "Time: " << ctime(&now) << endl;
     }
 };
 
-int main() {
-    VendingMachine vm;
+// ---------- Definitions of Overloaded Functions ----------
 
-    // Admin adds items
-    Admin admin("Rahul");
-    admin.displayRole();
-    vm.addItem(Item("Chips", 1, 20.0, 5));
-    vm.addItem(Item("Soda", 2, 35.0, 3));
-    vm.addItem(Item("Chocolate", 3, 25.0, 2));
-
-    // Show items
-    vm.showItems();
-
-    // User interacts
-    User user("Riya");
-    user.displayRole();
-    int choice;
-    cout << "\nEnter item code to buy: ";
-    cin >> choice;
-    double money;
-    cout << "Insert money: ";
-    cin >> money;
-
-    CashPayment cp(money);
-    user.buyItem(vm, choice, cp);
-
-    vm.showItems(); // Show updated stock
-    return 0;
+// Cash Payment
+int VendingMachine::makePayment(double moneyInserted) {
+    cout << "Cash Payment Selected.\n";
+    if (moneyInserted < price) return FAILURE;
+    if (moneyInserted > price) cout << "Returning change: " << moneyInserted - price << endl;
+    return SUCCESS;
 }
 
+// Card Payment
+int VendingMachine::makePayment(string cardNo, string holder, int cvv) {
+    cout << "Processing Card Payment for " << holder << endl;
+    if (cardNo.length() != 16 || cvv < 100) return FAILURE; // simple validation
+    return SUCCESS;
+}
+
+// UPI Payment
+int VendingMachine::makePayment(string upiId) {
+    cout << "Processing UPI Payment for " << upiId << endl;
+    return SUCCESS; // Assume confirmation
+}
+
+// NetBanking Payment
+int VendingMachine::makePayment(string bankName, string user, string pass) {
+    cout << "NetBanking via " << bankName << " for user " << user << endl;
+    if (pass.length() < 4) return FAILURE; // Dummy check
+    return SUCCESS;
+}
+
+// ---------- Main Function ----------
+int main() {
+    VendingMachine vm(101, "Coke", 50.0);
+    Transaction tx;
+
+    int choice;
+    cout << "Select Payment Method: 1.Cash 2.Card 3.UPI 4.NetBanking\n";
+    cin >> choice;
+
+    int status = FAILURE;
+
+    switch (choice) {
+        case 1: {
+            double money;
+            cout << "Insert Cash: ";
+            cin >> money;
+            status = vm.makePayment(money);
+            tx.logTransaction(vm, "Cash", money, status);
+            break;
+        }
+        case 2: {
+            string cardNo, holder;
+            int cvv;
+            cout << "Enter Card No: "; cin >> cardNo;
+            cout << "Enter Holder: "; cin >> holder;
+            cout << "Enter CVV: "; cin >> cvv;
+            status = vm.makePayment(cardNo, holder, cvv);
+            tx.logTransaction(vm, "Card", vm.getPrice(), status);
+            break;
+        }
+        case 3: {
+            string upiId;
+            cout << "Enter UPI ID: "; cin >> upiId;
+            status = vm.makePayment(upiId);
+            tx.logTransaction(vm, "UPI", vm.getPrice(), status);
+            break;
+        }
+        case 4: {
+            string bank, user, pass;
+            cout << "Enter Bank: "; cin >> bank;
+            cout << "Enter Username: "; cin >> user;
+            cout << "Enter Password: "; cin >> pass;
+            status = vm.makePayment(bank, user, pass);
+            tx.logTransaction(vm, "NetBanking", vm.getPrice(), status);
+            break;
+        }
+        default:
+            cout << "Invalid Choice\n";
+    }
+
+    if (status == SUCCESS) {
+        cout << "Dispensing product: " << vm.getProductName() << endl;
+    } else {
+        cout << "Payment Failed. Transaction Cancelled.\n";
+    }
+
+    VendingMachine::showTransactionCount();
+    return 0;
+}
