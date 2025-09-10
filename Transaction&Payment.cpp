@@ -3,21 +3,7 @@
 #include <string>
 using namespace std;
 
-// -------------------- Item Class --------------------
-class Item {
-    string name;
-    int code;
-    double price;
-    int quantity;
-public:
-    Item(string n, int c, double p, int q) : name(n), code(c), price(p), quantity(q) {}
-    string getName() { return name; }
-    int getCode() { return code; }
-    double getPrice() { return price; }
-    int getQuantity() { return quantity; }
-    bool isAvailable() { return quantity > 0; }
-    void reduceQuantity() { if(quantity > 0) quantity--; }
-};
+
 
 // -------------------- Abstract Payment Class --------------------
 class Payment {
@@ -69,44 +55,6 @@ public:
     }
 };
 
-// -------------------- Person Base Class --------------------
-class Person {
-protected:
-    string name;
-public:
-    Person(string n) : name(n) {}
-    virtual void displayRole() { cout << "I am a person." << endl; }
-};
-
-// -------------------- User (Derived) --------------------
-class User : public Person {
-public:
-    User(string n) : Person(n) {}
-    void displayRole() override { cout << "I am a user. My name is " << name << endl; }
-    void buyItem(VendingMachine &vm, int code, Payment &payment) {
-        Item* item = vm.selectItem(code);
-        if(item) {
-            if(payment.processPayment(item->getPrice())) {
-                vm.dispenseItem(item);
-            }
-        } else {
-            cout << "Item not available!" << endl;
-        }
-    }
-};
-
-// -------------------- Admin (Derived) --------------------
-class Admin : public Person {
-public:
-    Admin(string n) : Person(n) {}
-    void displayRole() override { cout << "I am an Admin. My name is " << name << endl; }
-    void restockItem(VendingMachine &vm, Item item) {
-        vm.addItem(item);
-        cout << "Admin added " << item.getName() << " to the machine.\n";
-    }
-};
-
-// -------------------- Main --------------------
 int main() {
     VendingMachine vm;
 
@@ -136,3 +84,4 @@ int main() {
     vm.showItems(); // Show updated stock
     return 0;
 }
+
