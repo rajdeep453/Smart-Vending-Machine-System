@@ -48,9 +48,18 @@ void restock(int amount){
     }
     quantity=max(quantity+amount,capacity);
 }
+bool dispense(int q){
+    if(q<=quantity) quantity -= q;
+    else {
+        cout<<"insufficient stock ,only"<<quantity<<"items left"<<endl;
+    }
+}
 
 
 
+
+};
+class transaction{
 
 };
 int product::id=0;
