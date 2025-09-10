@@ -60,6 +60,17 @@ bool dispense(int q){
 
 };
 class transaction{
+    int txid;
+    int slotid;
+    int productid;
+    int quantity;
+    int pricepaid;
+    int changegiven;
+    bool status;
+    transaction():txId(0),slotId(0),productId(0),pricePaid(0),changeGiven(0),timestamp(""),status("FAILED"){}
+transaction(int txid,int slotid,int productId,int pricePaid,int changegiven,string ,string &st):
+};
+class vendingmachine(){
 
 };
 int product::id=0;
