@@ -68,24 +68,19 @@ bool dispense(int q){
 
 
 };
-class transaction{
-    int txid;
-    int slotid;
-    int productid;
-    int quantity;
-    int pricepaid;
-    int changegiven;
-    bool status;
+// class transaction{
+//     int txid;
+//     int slotid;
+//     int productid;
+//     int quantity;
+//     int pricepaid;
+//     int changegiven;
+//     bool status;
      
-};
-class vendingmachine{
+// };
 
-};
 int product::id=0;
-int main(){
-  
-    return 0;
-}
+
 class Transaction;  
 class product;
 
@@ -144,7 +139,7 @@ public:
     void logTransaction(VendingMachine &vm, string method, double amount, bool status) {
         VendingMachine::transactionCount++;
         time_t now = time(0);
-        cout << "\n--- Transaction Log ---\n";
+        cout << "\n Transaction Log \n";
         cout << "Product: " << vm.productName << endl;
         cout << "Method: " << method << endl;
         cout << "Amount: " << amount << endl;
@@ -242,5 +237,6 @@ int main() {
     VendingMachine::showTransactionCount();
     return 0;
 }
+
 
 
