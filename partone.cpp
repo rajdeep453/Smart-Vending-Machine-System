@@ -43,8 +43,8 @@ int productid;
 int quantity;
 int capacity;
 void restock(int amount){
-    if(amount+quantiy >capacity){
-        cout<<"stock is  added and it is full"
+    if(amount+quantity >capacity){
+        cout<<"stock is  added and it is full"<<endl;
     }
     quantity=max(quantity+amount,capacity);
 }
@@ -67,10 +67,9 @@ class transaction{
     int pricepaid;
     int changegiven;
     bool status;
-    transaction():txId(0),slotId(0),productId(0),pricePaid(0),changeGiven(0),timestamp(""),status("FAILED"){}
-transaction(int txid,int slotid,int productId,int pricePaid,int changegiven,string ,string &st):
+     
 };
-class vendingmachine(){
+class vendingmachine{
 
 };
 int product::id=0;
