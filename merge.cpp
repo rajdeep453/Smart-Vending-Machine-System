@@ -86,9 +86,14 @@ struct delivery
 };
 class vendingmachine{
  int selectedid;
- int 
+ 
 };
-
+struct Delivery
+{
+    string personName;
+    string productName;
+    int quantity;
+};
 class transaction
 {
     
