@@ -1,6 +1,6 @@
 class Transaction :public Product {
     int tid;         
-    int productId;   
+    int productId;
     int qtySold;     
     float total;      
 
@@ -94,3 +94,5 @@ public:
         cout << "\nTransaction completed and receipt saved.\n";
     }
 };
+
+
