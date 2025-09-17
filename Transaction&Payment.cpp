@@ -1,98 +1,212 @@
-class Transaction :public Product {
-    int tid;         
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <iomanip> 
+
+using namespace std;
+
+class Transaction {
+protected:
     int productId;
-    int qtySold;     
-    float total;      
+    string productName;
+    int quantity;
+    float price;
+    float total;
 
 public:
-    void makeTransaction() {
-        string pname;
-        int pid, qty;
+    void setTransaction(int pid, string pname, int qty, float pr) {
+        productId = pid;
+        productName = pname;
+        quantity = qty;
+        price = pr;
+        total = qty * pr;
 
-        cout << "Enter Product ID: ";
-        cin >> pid;
-        cin.ignore(); 
-        cout << "Enter Product Name: ";
-        getline(cin, pname);
-        cout << "Enter Quantity: ";
-        cin >> qty;
-
-        
-        ifstream fin("products.txt");
-        vector<Product> products;
-        bool found = false;
-        int pQty = 0;
-        double price = 0.0;
-
-        int fileId;
-        string fileName;
-        double filePrice;
-        int fileQty;
-
-        while (fin >> fileId >> fileName >> filePrice >> fileQty) {
-            products.push_back(Product(fileId, fileName, filePrice, fileQty));
-            if (fileId == pid && fileName == pname) {
-                found = true;
-                pQty = fileQty;
-                price = filePrice;
-            }
-        }
-        fin.close();
-
-        if (!found) {
-            cout << "\nProduct not found!\n";
-            return;
-        }
-
-        if (qty > pQty) {
-            cout << "\nNot enough stock available!\n";
-            return;
-        }
-
-        
-        double money;
-        cout << "\nTotal Price: " << price * qty << endl;
-        cout << "Enter amount to pay: ";
-        cin >> money;
-
-        if (money < price * qty) {
-            cout << "Insufficient payment! Transaction cancelled.\n";
-            return;
-        }
-
-        double change = money - (price * qty);
-        cout << "Payment successful! Change: " << change << endl;
-
-        
-        for (auto &prod : products) {
-            if (prod.getId() == pid && prod.getName() == pname) {
-                prod.setQuantity(prod.getQuantity() - qty);
-                break;
-            }
-        }
-
-        ofstream fout("Temp.txt");
-        for (auto &prod : products) {
-            fout << prod.getId() << " " << prod.getName() << " "
-                 << prod.getPrice() << " " << prod.getQuantity() << endl;
-        }
+      
+        ofstream fout("transaction.txt", ios::app);
+        fout << productId << " " << productName << " "
+             << quantity << " " << price << " " << total << endl;
         fout.close();
+    }
 
-        remove("products.txt");
-        rename("Temp.txt", "products.txt");
 
-       
-        tid = rand() % 10000; 
-        ofstream receipt("receipt.txt", ios::app);
-        receipt << "TID:" << tid 
-                << " Product:" << pname 
-                << " Qty:" << qty 
-                << " Price:" << price 
-                << " Total:" << price * qty << endl;
-        receipt.close();
 
-        cout << "\nTransaction completed and receipt saved.\n";
+    void showTransaction() {
+        cout << "\n------ Transaction Summary ------\n";
+
+        
+        cout << left << setw(12) << "Product ID"
+             << setw(15) << "Product Name"
+             << setw(10) << "Quantity"
+             << setw(12) << "Price/Unit"
+             << setw(12) << "Total Price" << endl;
+
+        cout << string(61, '-') << endl;
+
+      
+        cout << left << setw(12) << productId
+             << setw(15) << productName
+             << setw(10) << quantity
+             << setw(12) << price
+             << setw(12) << total << endl;
+
+        cout << "---------------------------------\n";
+    }
+
+
+
+
+    float getTotal() {
+        return total;
     }
 };
 
+class Payment : public Transaction {
+public:
+    void makePayment() {
+        int choice;
+        cout << "\nSelect Payment Method:\n1. UPI\n2. Cash\n3. Netbanking\n4. Card\n";
+        cin >> choice;
 
+        bool success = false;
+        switch (choice) {
+        case 1: {
+            string upi;
+            cout << "Enter UPI ID: ";
+            cin >> upi;
+            if (upi.find('@') != string::npos) {
+                cout << "UPI Payment Successful!\n";
+                success = true;
+            } else {
+                cout << "Invalid UPI ID.\n";
+            }
+            break;
+        }
+        case 2: {
+            float cash;
+            cout << "Enter cash amount: ";
+            cin >> cash;
+            if (cash < total) {
+                cout << "Payment Failed. Not enough cash.\n";
+            } else {
+                cout << "Cash Payment Successful! Change: " << (cash - total) << endl;
+                success = true;
+            }
+            break;
+        }
+        case 3: {
+           
+            string banks[4] = {"SBI", "HDFC", "PNB", "YESBANK"};
+            int n = 4;
+
+            cout << "Select Bank:\n";
+            for (int i = 0; i < n; i++) {
+                cout << i + 1 << ". " << banks[i] << endl;
+            }
+
+            int bchoice;
+            cin >> bchoice;
+
+            if (bchoice >= 1 && bchoice <= n) {
+                cout << "Payment through " << banks[bchoice - 1] << " Successful!\n";
+                success = true;
+            } else {
+                cout << "Invalid Bank Selection.\n";
+            }
+            break;
+        }
+        case 4: {
+    string holder, expiry;
+    string cardNumber;
+    int cvv;
+
+    cout << "Enter Card Holder Name: ";
+    cin.ignore();
+    getline(cin, holder);
+
+    cout << "Enter Card Number (16 digits): ";
+    cin >> cardNumber;
+
+   
+    string digits;
+    for (char c : cardNumber) {
+        if (isdigit((unsigned char)c)) digits.push_back(c);
+    }
+
+   
+    if (digits.size() != 16) {
+        cout << "Invalid Card Number!\n";
+        break;
+    }
+
+    
+    string formatted;
+    for (int i = 0; i < 16; i++) {
+        if (i > 0 && i % 4 == 0) formatted.push_back(' ');
+        formatted.push_back(digits[i]);
+    }
+
+    cout << "Card Number Entered: " << formatted << endl;
+
+    cout << "Enter Expiry (MM/YY): ";
+    cin >> expiry;
+
+    cout << "Enter CVV (3 digits): ";
+    cin >> cvv;
+
+    if (cvv >= 100 && cvv <= 999) {
+        cout << "Card Payment Successful!\n";
+
+        
+        ofstream rout("receipt.txt", ios::app);
+        rout << "\n------ RECEIPT ------\n";
+        rout << "Thank you for choosing us!\n";
+        rout << "Product ID     : " << productId << endl;
+        rout << "Product Name   : " << productName << endl;
+        rout << "Quantity       : " << quantity << endl;
+        rout << "Price per item : " << price << endl;
+        rout << "Total Paid     : " << total << endl;
+        rout << "Payment Method : CARD\n";
+        rout << "Card Holder    : " << holder << endl;
+        rout << "Card Number    : " << formatted << endl; 
+        rout << "Expiry         : " << expiry << endl;
+        rout << "---------------------\n";
+        rout.close();
+
+        success = true;
+    } else {
+        cout << "Invalid CVV!\n";
+    }
+    break;
+}
+
+        default:
+            cout << "Cash\n";
+        }
+
+        if (success) {
+            
+            ofstream rout("receipt.txt", ios::app);
+            rout << "\n------ RECEIPT ------\n";
+            rout << "Thank you for choosing us!\n";
+            rout << "Product ID: " << productId << endl;
+            rout << "Product Name: " << productName << endl;
+            rout << "Quantity: " << quantity << endl;
+            rout << "Price per item: " << price << endl;
+            rout << "Total Paid: " << total << endl;
+            rout << "---------------------\n";
+            rout.close();
+
+            cout << "Receipt Printed.\nDispensing Product...\n";
+        }
+    }
+};
+
+int main() {
+    Payment p;
+    p.setTransaction(101, "Chips", 2, 10.0);
+
+    p.showTransaction();
+    
+    p.makePayment();
+    return 0;
+}
