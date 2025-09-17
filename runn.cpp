@@ -56,12 +56,14 @@ public:
     inventory(): cap(MAX_PRODUCTS) { for (int i=0;i<MAX_PRODUCTS;++i) items[i]=nullptr; }
     ~inventory(){ for (int i=0;i<MAX_PRODUCTS;++i) if (items[i]) { delete items[i]; items[i]=nullptr; } }
     void add(int id,const char* name,double price,int qty){
+        for(int i=0;i<cap;++i) if(items[i] && items[i]->getId()==id){ items[i]->changeQty(qty); return; }
         for(int i=0;i<cap;++i) if(!items[i]){ items[i]=new(std::nothrow) product(id,name,price,qty); if(items[i]) ++total; return; }
         std::cerr<<"inventory full\n";
     }
     bool has(int id) const { for(int i=0;i<cap;++i) if(items[i] && items[i]->getId()==id) return true; return false; }
     product get(int id) const { for(int i=0;i<cap;++i) if(items[i] && items[i]->getId()==id) return product(*items[i]); throw std::runtime_error("not found"); }
     void reduce(int id,int amt=1){ for(int i=0;i<cap;++i) if(items[i] && items[i]->getId()==id){ if(items[i]->getQty()<amt) throw std::runtime_error("insufficient"); items[i]->changeQty(-amt); return; } throw std::runtime_error("not found"); }
+    void restock(int id,int amt){ for(int i=0;i<cap;++i) if(items[i] && items[i]->getId()==id){ items[i]->changeQty(amt); return; } throw std::runtime_error("not found"); }
     void listAll() const { std::cout<<"Inventory:\n"; for(int i=0;i<cap;++i) if(items[i]) items[i]->print(); }
     static int totalProducts(){ return total; }
 };
@@ -88,38 +90,100 @@ public:
 };
 
 class simplepay : public ipayment {
-    bool ok;
+    double given;
 public:
-    simplepay(bool s=true): ok(s) {}
-    bool pay(double){ return ok; }
+    simplepay(double g=0.0): given(g) {}
+    bool pay(double amount) override { return given >= amount; }
     const char* methodName() const override { return "simple"; }
 };
+
+int readInt(){
+    int x;
+    while(!(std::cin>>x)){
+        std::cin.clear();
+        std::cin.ignore(1000,'\n');
+        std::cout<<"enter a valid number: ";
+    }
+    return x;
+}
+
+double readDouble(){
+    double x;
+    while(!(std::cin>>x)){
+        std::cin.clear();
+        std::cin.ignore(1000,'\n');
+        std::cout<<"enter a valid number: ";
+    }
+    return x;
+}
+
+void showMenu(){
+    std::cout<<"\nMenu:\n1 List products\n2 Add product\n3 Buy product\n4 Restock product\n5 Show total products\n6 Exit\nChoose: ";
+}
 
 int main(){
     inventory inv;
     inv.add(1,"Water",20.0,3);
     inv.add(2,"Soda",30.0,2);
-    inv.listAll();
     vending vm(&inv);
-    try{
-        vm.enterSelection();
-        std::cout<<"entered selection\n";
-        vm.selectProduct(1);
-        std::cout<<"selected 1\n";
-        simplepay sp(true);
-        if(vm.acceptPayment(&sp)){
-            std::cout<<"payment ok\n";
-            vm.dispense();
-            std::cout<<"dispensed\n";
-        } else std::cout<<"payment declined\n";
-    } catch(const std::exception& e){ std::cout<<"error: "<<e.what()<<"\n"; }
-    std::cout<<"\nAfter dispense:\n";
-    inv.listAll();
-    try{
-        vm.enterSelection();
-        vm.selectProduct(2);
-        simplepay sp2(false);
-        if(!vm.acceptPayment(&sp2)) std::cout<<"declined path works\n";
-    } catch(const std::exception& e){ std::cout<<"error: "<<e.what()<<"\n"; }
+    bool running=true;
+    while(running){
+        showMenu();
+        int choice = readInt();
+        switch(choice){
+            case 1:
+                inv.listAll();
+                break;
+            case 2:{
+                std::cout<<"Enter id: "; int id = readInt();
+                std::cout<<"Enter name (single word): "; char name[MAX_NAME_LEN]; std::cin>>name;
+                std::cout<<"Enter price: "; double price = readDouble();
+                std::cout<<"Enter qty: "; int qty = readInt();
+                inv.add(id,name,price,qty);
+                std::cout<<"Product added or restocked.\n";
+                break;
+            }
+            case 3:{
+                try{
+                    vm.enterSelection();
+                    std::cout<<"Enter product id to buy: "; int id = readInt();
+                    vm.selectProduct(id);
+                    product p = inv.get(id);
+                    std::cout<<"Price is "<<p.getPrice()<<". Enter cash amount: ";
+                    double given = readDouble();
+                    simplepay sp(given);
+                    bool ok = vm.acceptPayment(&sp);
+                    if(ok){
+                        vm.dispense();
+                        std::cout<<"Dispensed "<<p.getName()<<". Thank you.\n";
+                    } else {
+                        std::cout<<"Payment insufficient. Transaction cancelled.\n";
+                    }
+                } catch(const std::exception& e){
+                    std::cout<<"Error: "<<e.what()<<"\n";
+                }
+                break;
+            }
+            case 4:{
+                std::cout<<"Enter id to restock: "; int id = readInt();
+                std::cout<<"Enter amount to add: "; int amt = readInt();
+                try{
+                    inv.restock(id,amt);
+                    std::cout<<"Restocked.\n";
+                } catch(const std::exception& e){
+                    std::cout<<"Error: "<<e.what()<<"\n";
+                }
+                break;
+            }
+            case 5:
+                std::cout<<"Total products added: "<<inventory::totalProducts()<<"\n";
+                break;
+            case 6:
+                running=false;
+                break;
+            default:
+                std::cout<<"Invalid choice\n";
+        }
+    }
     return 0;
 }
