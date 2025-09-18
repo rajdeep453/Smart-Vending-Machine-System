@@ -14,6 +14,23 @@ protected:
     float total;
 
 public:
+
+
+    Transaction() {
+        productId = 0;
+        productName = "N/A";
+        quantity = 0;
+        price = 0.0;
+        total = 0.0;
+        
+    }
+
+    
+    ~Transaction() {
+        
+    }
+
+
     void setTransaction(int pid, string pname, int qty, float pr) {
         productId = pid;
         productName = pname;
@@ -31,30 +48,14 @@ public:
 
 
     void showTransaction() {
-        cout << "\n------ Transaction Summary ------\n";
-
-        
-        cout << left << setw(12) << "Product ID"
-             << setw(15) << "Product Name"
-             << setw(10) << "Quantity"
-             << setw(12) << "Price/Unit"
-             << setw(12) << "Total Price" << endl;
-
-        cout << string(61, '-') << endl;
-
-      
-        cout << left << setw(12) << productId
-             << setw(15) << productName
-             << setw(10) << quantity
-             << setw(12) << price
-             << setw(12) << total << endl;
-
-        cout << "---------------------------------\n";
-    }
-
-
-
-
+   
+   
+    cout << "Product Name : " << productName << endl;
+    cout << "Quantity     : " << quantity << endl;
+    cout << "Price/Unit   : " << price << endl;
+    cout << "Total Price  : " << total << endl;
+   
+}
     float getTotal() {
         return total;
     }
@@ -139,13 +140,6 @@ public:
     }
 
     
-    string formatted;
-    for (int i = 0; i < 16; i++) {
-        if (i > 0 && i % 4 == 0) formatted.push_back(' ');
-        formatted.push_back(digits[i]);
-    }
-
-    cout << "Card Number Entered: " << formatted << endl;
 
     cout << "Enter Expiry (MM/YY): ";
     cin >> expiry;
@@ -159,7 +153,7 @@ public:
         
         ofstream rout("receipt.txt", ios::app);
         rout << "\n------ RECEIPT ------\n";
-        rout << "Thank you for choosing us!\n";
+        rout << "Thanks for choosing us!\n";
         rout << "Product ID     : " << productId << endl;
         rout << "Product Name   : " << productName << endl;
         rout << "Quantity       : " << quantity << endl;
@@ -167,9 +161,9 @@ public:
         rout << "Total Paid     : " << total << endl;
         rout << "Payment Method : CARD\n";
         rout << "Card Holder    : " << holder << endl;
-        rout << "Card Number    : " << formatted << endl; 
+        
         rout << "Expiry         : " << expiry << endl;
-        rout << "---------------------\n";
+        
         rout.close();
 
         success = true;
@@ -193,7 +187,7 @@ public:
             rout << "Quantity: " << quantity << endl;
             rout << "Price per item: " << price << endl;
             rout << "Total Paid: " << total << endl;
-            rout << "---------------------\n";
+            
             rout.close();
 
             cout << "Receipt Printed.\nDispensing Product...\n";
