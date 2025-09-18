@@ -174,7 +174,16 @@ public:
 }
 
         default:
-            cout << "Cash\n";
+            float cash;
+            cout << "Enter cash amount: ";
+            cin >> cash;
+            if (cash < total) {
+                cout << "Payment Failed. Not enough cash.\n";
+            } else {
+                cout << "Cash Payment Successful! Change: " << (cash - total) << endl;
+                success = true;
+            }
+            break;
         }
 
         if (success) {
@@ -204,3 +213,4 @@ int main() {
     p.makePayment();
     return 0;
 }
+
