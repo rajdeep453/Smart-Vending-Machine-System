@@ -84,29 +84,3 @@ std::ostream& operator<<(std::ostream& os, const Product& p) {
        << " x" << p.quantity;
     return os;
 }
-
-// void Product::writeBinary(std::ostream& os) const {
-//     int32_t id_ = id; os.write(reinterpret_cast<const char*>(&id_), sizeof(id_));
-//     uint32_t nlen = static_cast<uint32_t>(nameLen); os.write(reinterpret_cast<const char*>(&nlen), sizeof(nlen));
-//     if (nlen) os.write(name, static_cast<std::streamsize>(nlen));
-//     double pr = price; os.write(reinterpret_cast<const char*>(&pr), sizeof(pr));
-//     int32_t q = quantity; os.write(reinterpret_cast<const char*>(&q), sizeof(q));
-//     if (!os) throw std::runtime_error("write error");
-// }
-
-// Product Product::readBinary(std::istream& is) {
-//     int32_t id_; if (!is.read(reinterpret_cast<char*>(&id_), sizeof(id_))) throw std::runtime_error("read id");
-//     uint32_t nlen; if (!is.read(reinterpret_cast<char*>(&nlen), sizeof(nlen))) throw std::runtime_error("read nlen");
-//     char* buf = nullptr;
-//     if (nlen > 0) {
-//         buf = new (std::nothrow) char[nlen+1];
-//         if (!buf) throw std::bad_alloc();
-//         if (!is.read(buf, static_cast<std::streamsize>(nlen))) { delete[] buf; throw std::runtime_error("read name"); }
-//         buf[nlen] = '\0';
-//     }
-//     double pr; if (!is.read(reinterpret_cast<char*>(&pr), sizeof(pr))) { if (buf) delete[] buf; throw std::runtime_error("read price"); }
-//     int32_t q; if (!is.read(reinterpret_cast<char*>(&q), sizeof(q))) { if (buf) delete[] buf; throw std::runtime_error("read qty"); }
-//     Product p; p.id = id_; p.price = pr; p.quantity = q; p.nameLen = nlen;
-//     if (nlen>0) { p.name = buf; p.owner = true; } else { if (buf) delete[] buf; p.name = nullptr; p.owner = true; }
-//     return p;
-}
