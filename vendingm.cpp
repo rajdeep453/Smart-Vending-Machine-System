@@ -11,7 +11,7 @@ class vendingm{
 
 vmstate currentstate;
 
-// inventory inv;
+
 public:
     
 };

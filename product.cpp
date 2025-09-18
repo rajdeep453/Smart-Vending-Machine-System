@@ -1,108 +1,95 @@
-// File: product.cpp
-#include "product.h"
 #include <iostream>
-#include <new>
 #include <cstring>
+#include <new>
 
-product::product() : id_(0), name_(nullptr), price_(0.0), qty_(0) {
-}
+#define MAX_NAME_LEN 64
 
-product::product(int id, const char* nameParam, double price, int qty)
-    : id_(id), name_(nullptr), price_(price), qty_(qty) {
-    if (nameParam) {
-        name_ = new (std::nothrow) char[MAX_NAME_LEN];
-        if (name_) {
-            std::strncpy(name_, nameParam, MAX_NAME_LEN - 1);
-            name_[MAX_NAME_LEN - 1] = '\0';
-        } else {
-            id_ = 0;
-            price_ = 0.0;
-            qty_ = 0;
+class product {
+private:
+    int id;
+    char* name;
+    double price;
+    int qty;
+public:
+    product() : id(0), name(nullptr), price(0.0), qty(0) {}
+    product(int pid, const char* pname, double pprice, int pqty)
+    : id(pid), price(pprice), qty(pqty) {
+        name = new(std::nothrow) char[MAX_NAME_LEN];
+        if (name == nullptr) {
+            this->id = 0;
+            this->price = 0.0;
+            this->qty = 0;
+            return;
         }
-    } else {
-        name_ = nullptr;
+        std::strncpy(name, pname ? pname : "", MAX_NAME_LEN - 1);
+        name[MAX_NAME_LEN - 1] = '\0';
     }
-}
-
-product::product(const product& other)
-    : id_(other.id_), name_(nullptr), price_(other.price_), qty_(other.qty_) {
-    if (other.name_) {
-        name_ = new (std::nothrow) char[MAX_NAME_LEN];
-        if (name_) {
-            std::strncpy(name_, other.name_, MAX_NAME_LEN - 1);
-            name_[MAX_NAME_LEN - 1] = '\0';
+    product(const product& other)
+    : id(other.id), price(other.price), qty(other.qty) {
+        if (other.name) {
+            name = new(std::nothrow) char[MAX_NAME_LEN];
+            if (name) {
+                std::strncpy(name, other.name, MAX_NAME_LEN - 1);
+                name[MAX_NAME_LEN - 1] = '\0';
+            } else {
+                name = nullptr;
+            }
         } else {
-            name_ = nullptr;
+            name = nullptr;
         }
-    } else {
-        name_ = nullptr;
     }
-}
-
-product product::shallowCopy() const {
-    product p;
-    p.id_ = id_;
-    p.price_ = price_;
-    p.qty_ = qty_;
-    p.name_ = name_;
-    return p;
-}
-
-product::~product() {
-    if (name_) {
-        delete[] name_;
-        name_ = nullptr;
+    product shallowCopy() const {
+        product p;
+        p.id = id;
+        p.price = price;
+        p.qty = qty;
+        p.name = name;
+        return p;
     }
-}
-
-product& product::operator=(const product& other) {
-    if (this == &other) return *this;
-    if (name_) {
-        delete[] name_;
-        name_ = nullptr;
+    ~product() {
+        if (name) {
+            delete [] name;
+            name = nullptr;
+        }
     }
-    id_ = other.id_;
-    price_ = other.price_;
-    qty_ = other.qty_;
-    if (other.name_) {
-        name_ = new (std::nothrow) char[MAX_NAME_LEN];
-        if (name_) {
-            std::strncpy(name_, other.name_, MAX_NAME_LEN - 1);
-            name_[MAX_NAME_LEN - 1] = '\0';
+    product& operator=(const product& other) {
+        if (this == &other) return *this;
+        if (name) { delete [] name; name = nullptr; }
+        id = other.id;
+        price = other.price;
+        qty = other.qty;
+        if (other.name) {
+            name = new(std::nothrow) char[MAX_NAME_LEN];
+            if (name) {
+                std::strncpy(name, other.name, MAX_NAME_LEN - 1);
+                name[MAX_NAME_LEN - 1] = '\0';
+            }
         } else {
-            name_ = nullptr;
+            name = nullptr;
         }
-    } else {
-        name_ = nullptr;
+        return *this;
     }
-    return *this;
-}
-
-bool product::operator==(const product& other) const {
-    return this->id_ == other.id_;
-}
-
-product product::operator+(int addQty) const {
-    product result(*this);
-    result.qty_ += addQty;
-    return result;
-}
-
-void product::setQty(int q) {
-    this->qty_ = q;
-}
-
-void product::changeQty(int delta) {
-    this->qty_ += delta;
-}
-
-void product::print() const {
-    std::cout << "product{id=" << id_
-              << ", name=" << (name_ ? name_ : "(null)")
-              << ", price=" << price_
-              << ", qty=" << qty_ << "}\n";
-}
+    bool operator==(const product& other) const {
+        return this->id == other.id;
+    }
+    product operator+(int addQty) const {
+        product p(*this);
+        p.qty += addQty;
+        return p;
+    }
+    inline int getId() const { return id; }
+    inline const char* getName() const { return name; }
+    inline double getPrice() const { return price; }
+    inline int getQty() const { return qty; }
+    void setQty(int q) { this->qty = q; }
+    void changeQty(int delta) { this->qty += delta; }
+    void print() const {
+        std::cout << "product{id=" << id << ", name=" << (name ? name : "(null)")
+                  << ", price=" << price << ", qty=" << qty << "}\n";
+    }
+    friend void debugproduct(const product& p);
+};
 
 void debugproduct(const product& p) {
-    std::cout << "[DEBUG] product pointer name: " << static_cast<const void*>(p.name_) << '\n';
+    std::cout << "[DEBUG] product name pointer: " << static_cast<const void*>(p.name) << "\n";
 }
