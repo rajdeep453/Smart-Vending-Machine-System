@@ -182,37 +182,29 @@ public:
     virtual bool pay(double) = 0;
     virtual const char *methodName() const = 0;
     virtual ~ipayment() {}
+    friend class simplepay;
 };
-
 class vending
 {
     inventory *inv;
     vmstate state;
     int sel;
-
 public:
     vending(inventory *i) : inv(i), state(vmstate::idle), sel(-1) {}
     vmstate getState() const { return state; }
     void enterSelection()
     {
-        if (state != vmstate::idle)
-            throw runtime_error("invalid");
+      
         state = vmstate::selecting;
     }
     void selectProduct(int id)
     {
-        if (state != vmstate::selecting)
-            throw runtime_error("invalid");
-        if (!inv->has(id))
-        {
-            state = vmstate::idle;
-            throw runtime_error("not found");
-        }
+     
         product p = inv->get(id);
         if (p.getQty() <= 0)
         {
             state = vmstate::idle;
-            throw runtime_error("out of stock");
+          
         }
         sel = id;
         state = vmstate::payment_waiting;
@@ -220,11 +212,11 @@ public:
     bool acceptPayment(ipayment *m)
     {
         if (state != vmstate::payment_waiting)
-            throw runtime_error("invalid");
+          
         if (!inv->has(sel))
         {
             state = vmstate::idle;
-            throw runtime_error("gone");
+         
         }
         product p = inv->get(sel);
         bool ok = m->pay(p.getPrice());
@@ -234,8 +226,8 @@ public:
     }
     void dispense()
     {
-        if (state != vmstate::dispensing)
-            throw runtime_error("invalid");
+        
+         
         inv->reduce(sel, 1);
         sel = -1;
         state = vmstate::idle;
@@ -243,18 +235,6 @@ public:
     void setOut() { state = vmstate::out_of_service; }
     bool available() const { return state != vmstate::out_of_service; }
 };
-
-class simplepay : public ipayment
-
-{
-    double given;
-
-public:
-    simplepay(double g = 0.0) : given(g) {}
-    bool pay(double amount) override { return given >= amount; }
-    const char *methodName() const override { return "simple"; }
-};
-
 int readInt()
 {
     int x;
@@ -262,7 +242,7 @@ int readInt()
     {
         cin.clear();
         cin.ignore(1000, '\n');
-        cout << "enter a valid number: ";
+        cout << "enter a valid number: "; 
     }
     return x;
 }
@@ -310,7 +290,7 @@ int main()
         {
             cout << "Enter id: ";
             int id = readInt();
-            cout << "Enter name (single word): ";
+            cout << "Enter name : ";
             char name[MAX_NAME_LEN];
             cin >> name;
             cout << "Enter price: ";
@@ -340,7 +320,6 @@ int main()
             double given = readDouble();
             if (given >= p.getPrice())
             {
-                // safe to reduce because we checked qty
                 inv.reduce(id, 1);
                 cout << "Dispensed " << p.getName() << ". Thank you.\n";
             }
